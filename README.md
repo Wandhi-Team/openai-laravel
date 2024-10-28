@@ -15,6 +15,7 @@
 
 > **Note:** This repository contains the integration code of the **OpenAI PHP** for Laravel. If you want to use the **OpenAI PHP** client in a framework-agnostic way, take a look at the [openai-php/client](https://github.com/openai-php/client) repository.
 
+
 ## Get Started
 
 > **Requires [PHP 8.1+](https://php.net/releases/)**
@@ -25,17 +26,19 @@ First, install OpenAI via the [Composer](https://getcomposer.org/) package manag
 composer require openai-php/laravel
 ```
 
-Next, publish the configuration file:
+Next, execute the install command:
 
 ```bash
-php artisan vendor:publish --provider="OpenAI\Laravel\ServiceProvider"
+php artisan openai:install
 ```
 
 This will create a `config/openai.php` configuration file in your project, which you can modify to your needs
-using environment variables: 
+using environment variables.
+Blank environment variables for the OpenAI API key and organization id are already appended to your `.env` file.
 
 ```env
 OPENAI_API_KEY=sk-...
+OPENAI_ORGANIZATION=org-...
 ```
 
 Finally, you may use the `OpenAI` facade to access the OpenAI API:
@@ -43,12 +46,14 @@ Finally, you may use the `OpenAI` facade to access the OpenAI API:
 ```php
 use OpenAI\Laravel\Facades\OpenAI;
 
-$result = OpenAI::completions()->create([
-    'model' => 'text-davinci-003',
-    'prompt' => 'PHP is',
+$result = OpenAI::chat()->create([
+    'model' => 'gpt-3.5-turbo',
+    'messages' => [
+        ['role' => 'user', 'content' => 'Hello!'],
+    ],
 ]);
 
-echo $result['choices'][0]['text']; // an open-source, widely-used, server-side scripting language.
+echo $result->choices[0]->message->content; // Hello! How can I assist you today?
 ```
 
 ## Configuration
@@ -102,7 +107,7 @@ OpenAI::fake([
 ]);
 
 $completion = OpenAI::completions()->create([
-    'model' => 'text-davinci-003',
+    'model' => 'gpt-3.5-turbo-instruct',
     'prompt' => 'PHP is ',
 ]);
 
@@ -115,7 +120,7 @@ After the requests have been sent there are various methods to ensure that the e
 // assert completion create request was sent
 OpenAI::assertSent(Completions::class, function (string $method, array $parameters): bool {
     return $method === 'create' &&
-        $parameters['model'] === 'text-davinci-003' &&
+        $parameters['model'] === 'gpt-3.5-turbo-instruct' &&
         $parameters['prompt'] === 'PHP is ';
 });
 ```
